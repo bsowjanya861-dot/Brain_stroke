@@ -1,19 +1,20 @@
 import streamlit as st
-import tensorflow as tf
-import numpy as np
+from predict import predict_image
+from PIL import Image
+import tempfile
 
-# Load model
-model = tf.keras.models.load_model("model.keras")
+st.title("Brain Stroke Classification")
 
-st.title("My ML App")
+uploaded_file = st.file_uploader("Upload MRI Image", type=["jpg","png","jpeg"])
 
-# Example input (modify based on your model)
-input_value = st.number_input("Enter a value")
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-if st.button("Predict"):
-    # Convert input into model format
-    input_array = np.array([[input_value]])
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+        image.save(tmp.name, format="JPEG")
 
-    prediction = model.predict(input_array)
+        prediction, confidence = predict_image(tmp.name)
 
-    st.write("Prediction:", prediction)
+    st.success(f"Prediction: {prediction}")
+    st.write(f"Confidence: {confidence*100:.2f}%")
